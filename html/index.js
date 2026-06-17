@@ -1,182 +1,245 @@
+/**
+ * Exter Library v2.0 - Premium Modern UI Library
+ * Zero dependencies - Pure Vanilla JavaScript
+ * Smooth animations, micro-interactions, premium feel
+ */
 
-var progbar = false
+(() => {
+    'use strict';
 
-window.addEventListener('message', function(e) {
-    
-    if (e.data.message == "notify"){
-       
-        ShowNotif(e.data);
+    // ==========================================
+    // NOTIFICATION SYSTEM
+    // ==========================================
+
+    const notifyContainer = document.getElementById('notifyContainer');
+    const activeNotifs = new Map();
+
+    const NOTIFY_ICONS = {
+        error: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+            <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`,
+        info: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`,
+        success: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`,
+        warning: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 20H22L12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3" stroke-linejoin="round"/>
+            <path d="M12 9V13M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`
+    };
+
+    const NOTIFY_TITLES = {
+        error: 'Error',
+        info: 'Information',
+        success: 'Success',
+        warning: 'Warning'
+    };
+
+    function createNotification(data) {
+        const type = data.ntype || 'info';
+        const text = data.ntext || '';
+        const time = data.ntime || 5000;
+        const id = data.dataid || Math.random().toString(36).substr(2, 9);
+
+        const notifEl = document.createElement('div');
+        notifEl.className = `notify-item ${type}`;
+        notifEl.dataset.id = id;
+
+        notifEl.innerHTML = `
+            <div class="notify-icon">
+                ${NOTIFY_ICONS[type] || NOTIFY_ICONS.info}
+            </div>
+            <div class="notify-content">
+                <span class="notify-title">${NOTIFY_TITLES[type] || 'Notice'}</span>
+                <span class="notify-text">${text}</span>
+            </div>
+            <div class="notify-timer" style="animation-duration: ${time}ms;"></div>
+        `;
+
+        return { element: notifEl, id, time };
     }
 
-    if (e.data.message == "progbar"){
-        ProgBar(e.data);
+    function showNotification(data) {
+        const { element, id, time } = createNotification(data);
+
+        // If notification with same ID exists, remove it first
+        if (data.id && activeNotifs.has(data.id)) {
+            removeNotification(data.id);
+        }
+
+        // Add stagger delay based on existing notifications
+        const existingCount = notifyContainer.children.length;
+        if (existingCount > 0) {
+            element.style.animationDelay = `${existingCount * 50}ms`;
+        }
+
+        notifyContainer.appendChild(element);
+
+        const timer = setTimeout(() => {
+            removeNotification(id);
+        }, time);
+
+        activeNotifs.set(id, { element, timer });
     }
 
-    if (e.data.message == "info"){
-        $('.leftinfo').fadeIn(100);
-        $('.leftinfo_top').html(e.data.toptext);
-        $('.leftinfo_bottom').html(e.data.text);
+    function removeNotification(id) {
+        const notif = activeNotifs.get(id);
+        if (!notif) return;
 
-        
-        
+        notif.element.classList.add('removing');
+        clearTimeout(notif.timer);
+
+        setTimeout(() => {
+            if (notif.element.parentNode) {
+                notif.element.parentNode.removeChild(notif.element);
+            }
+            activeNotifs.delete(id);
+        }, 350);
     }
 
-    if (e.data.message == "closeinfo"){
-        $('.leftinfo').fadeOut(100);
-      
+    // ==========================================
+    // PROGRESS BAR
+    // ==========================================
 
-        
-        
-    }
+    const progressWrapper = document.getElementById('progressbarWrapper');
+    const progressFill = document.getElementById('progressFill');
+    const progressGlow = document.getElementById('progressGlow');
+    const progressLabel = document.getElementById('progressLabel');
+    const progressPercent = document.getElementById('progressPercent');
 
-    
-});
+    let progressActive = false;
+    let progressAnimation = null;
 
+    function startProgressBar(data) {
+        if (progressActive) return;
 
-function ProgBar(data) {
-    if (progbar == false) {
+        progressActive = true;
+        const duration = data.mtime || 5000;
+        const label = data.mtext || 'Loading...';
 
-    
-        $('.progbarmain_2_item').removeClass('addhover');
-        $('.progbarmain').fadeIn(200);
+        // Reset
+        progressFill.style.width = '0%';
+        progressGlow.style.width = '0%';
+        progressLabel.textContent = label;
+        progressPercent.textContent = '0%';
 
-        $('.progbarmain_text').html(data.mtext);
-        i = 0
-        
-        progbar = true;
+        // Show with smooth entrance
+        progressWrapper.classList.add('active');
 
-        var count = $(".progbarmain_2_item").length;
-        var speed = data.mtime/count;
+        // Smooth animation using requestAnimationFrame
+        const startTime = performance.now();
+        let lastPercent = 0;
 
-        $(".progbarmain_2_item").each(function(index){
-    
-            $(this).delay(speed*index).queue(function(next){
-              
-              i = i + 1
-              $('.progbarmain_yuzde').html((i*5)+"%");
+        function animate(currentTime) {
+            if (!progressActive) return;
 
-              $(this).addClass('addhover');
-              if (i == 20){
-                progbar = false;
-                $('.progbarmain').fadeOut(200);
-                $.post('https://exter-lib/FinishAction', JSON.stringify({}));
-
-              }
-              
-             
-              next();
-            });
-        });
-
-
-    }
-
-    
-}
-
-function CreateNotification(data) {
-    
-    let $notification = $(document.createElement('div'));
-  
-    if (data.ntype == "error"){
-       $notification.html('<div class="notifymain_item"> <div class="notifymain_item_icon"> <svg style="margin-top: 2px; margin-left: 2px; opacity:0.3;" width="12px" height="12px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <title>cancel</title> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="work-case" fill="#000000" transform="translate(91.520000, 91.520000)"> <polygon id="Close" points="328.96 30.2933333 298.666667 1.42108547e-14 164.48 134.4 30.2933333 1.42108547e-14 1.42108547e-14 30.2933333 134.4 164.48 1.42108547e-14 298.666667 30.2933333 328.96 164.48 194.56 298.666667 328.96 328.96 298.666667 194.56 164.48"> </polygon> </g> </g> </svg> </div> <div class="notifymain_item_text">'+data.ntext+'</div> <div class="notifymain_item_time"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="11"> <defs> <linearGradient id="circle.progress.color"> <stop offset="0%" stop-color="red" /> <stop offset="100%" stop-color="#a74f55e1" /> </linearGradient> <filter id="shadow"> <feDropShadow dx=".4" dy=".4" stdDeviation="1" flood-color="red"/> </filter> </defs> <circle r="40" stroke="white" stroke-width="5" fill="none" transform="translate(50 50)" filter="url(#shadow)"/> <circle id="'+data.dataid+'" r="40" stroke="#a74f55e1" stroke-width="8" fill="none" pathLength="100" stroke-dasharray="0 100" transform="translate(50 50) rotate(-90)" stroke-linecap="round"/> </svg> </div> </div>')
-  
-    }
-  
-    if (data.ntype == "info"){
-      $notification.html('<div class="notifymain_item2"> <div class="notifymain_item_icon2"> <svg style="margin-top: 0px; margin-left: 1.5px;"  width="25px" height="25px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="#44c3a3" class="bi bi-info"> <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/> </svg> </div> <div class="notifymain_item_text2">'+data.ntext+'</div> <div class="notifymain_item_time2"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="11"> <defs> <linearGradient id="circle.progress.color"> <stop offset="0%" stop-color="BlueViolet" /> <stop offset="100%" stop-color="MediumVioletRed" /> </linearGradient> <filter id="shadow"> <feDropShadow dx=".4" dy=".4" stdDeviation="1" flood-color="gray"/> </filter> </defs> <circle r="40" stroke="white" stroke-width="5" fill="none" transform="translate(50 50)" filter="url(#shadow)"/> <circle id="'+data.dataid+'" r="40" stroke="#1b6f5ef2" stroke-width="8" fill="none" pathLength="100" stroke-dasharray="0 100" transform="translate(50 50) rotate(-90)" stroke-linecap="round"/> </svg> </div> </div>')
-   }
-  
-   if (data.ntype == "success"){
-    $notification.html('<div class="notifymain_item3"> <div class="notifymain_item_icon3"> <svg style="margin-top: 3px; margin-left: 2.5px;" width="12px" height="12px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M4 12.6111L8.92308 17.5L20 6.5" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/> </svg> </div> <div class="notifymain_item_text">'+data.ntext+'</div> <div class="notifymain_item_time"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="11"> <defs> <linearGradient id="circle.progress.color"> <stop offset="0%" stop-color="BlueViolet" /> <stop offset="100%" stop-color="MediumVioletRed" /> </linearGradient> <filter id="shadow"> <feDropShadow dx=".4" dy=".4" stdDeviation="1" flood-color="gray"/> </filter> </defs> <circle r="40" stroke="white" stroke-width="5" fill="none" transform="translate(50 50)" filter="url(#shadow)"/> <circle id="'+data.dataid+'" r="40" stroke="#283047f0" stroke-width="8" fill="none" pathLength="100" stroke-dasharray="0 100" transform="translate(50 50) rotate(-90)" stroke-linecap="round"/> </svg> </div> </div>')
-  }
-   
-  
-    $notification.fadeIn();
-    if (data.style !== undefined) {
-        Object.keys(data.style).forEach(function(css) {
-            $notification.css(css, data.style[css])
-        });
-    }
-  
-    return $notification;
-}
-
-function ShowNotif(data) {
-    
-    if (data.id != null) {
-        if (notifs[data.id] === undefined) {
-            let $notification = CreateNotification(data);
-            $('.notifymain').append($notification);
-            notifs[data.id] = {
-                notif: $notification,
-                timer: setTimeout(function() {
-                    let $notification = notifs[data.id].notif;
-                    $.when($notification.fadeOut()).done(function() {
-                        $notification.remove();
-                        clearTimeout(notifs[data.id].timer);
-                        delete notifs[data.id];
-                    });
-                }, data.ntime != null ? data.ntime : 2500)
-            };
-
+            const elapsed = currentTime - startTime;
+            const rawProgress = Math.min(elapsed / duration, 1);
             
-        } else {
-            clearTimeout(notifs[data.id].timer);
-            // UpdateNotification(data);
+            // Apply easing for smoother visual
+            const progress = rawProgress;
+            const percent = Math.round(progress * 100);
 
-            notifs[data.id].timer = setTimeout(function() {
-                let $notification = notifs[data.id].notif;
-                $.when($notification.fadeOut()).done(function() {
-                    $notification.remove();
-                    clearTimeout(notifs[data.id].timer);
-                    delete notifs[data.id];
-                });
-            }, data.ntime != null ? data.ntime : 2500)
+            if (percent !== lastPercent) {
+                progressFill.style.width = `${percent}%`;
+                progressGlow.style.width = `${percent}%`;
+                progressPercent.textContent = `${percent}%`;
+                lastPercent = percent;
+            }
+
+            if (progress < 1) {
+                progressAnimation = requestAnimationFrame(animate);
+            } else {
+                finishProgressBar();
+            }
         }
-    } else {
-        let $notification = CreateNotification(data);
-       
-        $('.notifymain').append($notification);
-        trythis(data.dataid, data.ntime)
-        setTimeout(function() {
-            $.when($notification.fadeOut()).done(function() {
-                $notification.remove()
-            });
-        }, data.ntime != null ? data.ntime : 2500);
+
+        progressAnimation = requestAnimationFrame(animate);
     }
 
-   
-
-}
-
-
-function trythis(id, value) {
-   
-
-     const progress = document.getElementById(String(id));
-  
-
-
-    var progressKeyframes = new KeyframeEffect(
-        progress, 
-        [
-            { strokeDasharray: '0 100' }, 
-            { strokeDasharray: '100 100' }
-        ], 
-        { duration:Number(value), fill: 'forwards' }
-        );
-
-        
-    var a1 = new Animation(progressKeyframes, document.timeline);
-    a1.play();
-    
-    let timer = setInterval(function(){
-        if(a1.playState == 'running'){
-        // console.log('sss')
-        }else if(a1.playState == 'finished'){
-        // text.textContent = Math.round(e.target.value/1000);
-        clearInterval(timer);
+    function finishProgressBar() {
+        progressActive = false;
+        if (progressAnimation) {
+            cancelAnimationFrame(progressAnimation);
+            progressAnimation = null;
         }
-    }, 100);
-}
+
+        // Brief completion flash
+        progressFill.style.width = '100%';
+        progressGlow.style.width = '100%';
+        progressPercent.textContent = '100%';
+
+        setTimeout(() => {
+            progressWrapper.classList.remove('active');
+            // Notify FiveM
+            fetch('https://exter-lib/FinishAction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }).catch(() => {});
+        }, 300);
+    }
+
+    function cancelProgressBar() {
+        progressActive = false;
+        if (progressAnimation) {
+            cancelAnimationFrame(progressAnimation);
+            progressAnimation = null;
+        }
+        progressWrapper.classList.remove('active');
+    }
+
+    // ==========================================
+    // INFO PANEL
+    // ==========================================
+
+    const infoPanel = document.getElementById('infoPanel');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoText = document.getElementById('infoText');
+
+    function showInfoPanel(data) {
+        infoTitle.textContent = data.toptext || 'Information';
+        infoText.textContent = data.text || '';
+        infoPanel.classList.add('active');
+    }
+
+    function hideInfoPanel() {
+        infoPanel.classList.remove('active');
+    }
+
+    // ==========================================
+    // MESSAGE HANDLER (FiveM NUI)
+    // ==========================================
+
+    window.addEventListener('message', (event) => {
+        const data = event.data;
+
+        switch (data.message) {
+            case 'notify':
+                showNotification(data);
+                break;
+
+            case 'progbar':
+                startProgressBar(data);
+                break;
+
+            case 'cancel':
+                cancelProgressBar();
+                break;
+
+            case 'info':
+                showInfoPanel(data);
+                break;
+
+            case 'closeinfo':
+                hideInfoPanel();
+                break;
+        }
+    });
+
+})();
