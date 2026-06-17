@@ -4,9 +4,9 @@ lua54 'yes'
 
 author 'sobing'
 
-description 'exter-library ui like nopixel 4.0'
+description 'exter-library v2.0 - Modern UI Library'
 
-version '1.0'
+version '2.0'
 
 ui_page 'html/index.html'
 
