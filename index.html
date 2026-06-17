@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Exter Library v2.0 - Premium Preview</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --color-error: #f43f5e;
+            --color-error-bg: rgba(244, 63, 94, 0.08);
+            --color-error-border: rgba(244, 63, 94, 0.18);
+            --color-error-glow: rgba(244, 63, 94, 0.35);
+            --color-error-soft: #fda4af;
+
+            --color-info: #6366f1;
+            --color-info-bg: rgba(99, 102, 241, 0.08);
+            --color-info-border: rgba(99, 102, 241, 0.18);
+            --color-info-glow: rgba(99, 102, 241, 0.35);
+            --color-info-soft: #a5b4fc;
+
+            --color-success: #22c55e;
+            --color-success-bg: rgba(34, 197, 94, 0.08);
+            --color-success-border: rgba(34, 197, 94, 0.18);
+            --color-success-glow: rgba(34, 197, 94, 0.35);
+            --color-success-soft: #86efac;
+
+            --color-warning: #eab308;
+            --color-warning-bg: rgba(234, 179, 8, 0.08);
+            --color-warning-border: rgba(234, 179, 8, 0.18);
+            --color-warning-glow: rgba(234, 179, 8, 0.35);
+            --color-warning-soft: #fde047;
+
+            --glass-bg: rgba(10, 10, 15, 0.65);
+            --glass-bg-elevated: rgba(18, 18, 25, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-blur: 24px;
+            --glass-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+            --font-primary: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            --radius-sm: 10px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --radius-full: 100px;
+
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4);
+
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            user-select: none;
+            overflow: hidden;
+            font-family: var(--font-primary);
+            -webkit-font-smoothing: antialiased;
+            background: #08080c;
+        }
+
+        /* Ambient Background */
+        .bg-ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 20% 30%, rgba(99, 102, 241, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 70%, rgba(34, 197, 94, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 50% at 50% 50%, rgba(244, 63, 94, 0.03) 0%, transparent 40%);
+            animation: ambientShift 25s ease-in-out infinite alternate;
+        }
+
+        @keyframes ambientShift {
+            0% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.05); }
+        }
+
+        /* Grid pattern overlay */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+        }
+
+        /* Version Badge */
+        .version-badge {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 28px;
+            background: var(--glass-bg-elevated);
+            backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            z-index: 10000;
+            box-shadow: var(--shadow-xl), var(--glass-inner-shadow);
+        }
+
+        .version-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+        }
+
+        .version-badge h1 {
+            font-size: 15px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            letter-spacing: -0.02em;
+        }
+
+        .version-badge .tag {
+            padding: 4px 10px;
+            background: var(--color-success-bg);
+            border: 1px solid var(--color-success-border);
+            border-radius: var(--radius-full);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--color-success);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Demo Controls */
+        .demo-controls {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10000;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90vw;
+            padding: 12px 16px;
+            background: var(--glass-bg-elevated);
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .demo-btn {
+            padding: 9px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.8);
+            font-family: var(--font-primary);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s var(--ease-out-expo);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .demo-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .demo-btn:active { transform: translateY(0) scale(0.97); }
+
+        .demo-btn.error:hover { border-color: var(--color-error-border); color: var(--color-error); box-shadow: 0 4px 20px rgba(244, 63, 94, 0.15); }
+        .demo-btn.info:hover { border-color: var(--color-info-border); color: var(--color-info); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15); }
+        .demo-btn.success:hover { border-color: var(--color-success-border); color: var(--color-success); box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15); }
+        .demo-btn.warning:hover { border-color: var(--color-warning-border); color: var(--color-warning); box-shadow: 0 4px 20px rgba(234, 179, 8, 0.15); }
+        .demo-btn.progress:hover { border-color: var(--color-success-border); color: var(--color-success); box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15); }
+        .demo-btn.infopanel:hover { border-color: var(--color-info-border); color: var(--color-info); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15); }
+
+        /* ==========================================
+           NOTIFICATION SYSTEM
+           ========================================== */
+
+        .notify-container {
+            position: fixed;
+            top: 80px;
+            right: 16px;
+            width: 380px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .notify-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            pointer-events: auto;
+            transform: translateX(calc(100% + 20px)) scale(0.95);
+            opacity: 0;
+            animation: notifyEnter 0.5s var(--ease-out-expo) forwards;
+            will-change: transform, opacity;
+        }
+
+        .notify-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+        }
+
+        .notify-item::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 0;
+            bottom: 8px;
+            width: 2.5px;
+            border-radius: var(--radius-full);
+        }
+
+        .notify-item.removing { animation: notifyExit 0.35s var(--ease-in-out) forwards; }
+
+        @keyframes notifyEnter {
+            0% { transform: translateX(calc(100% + 20px)) scale(0.95); opacity: 0; }
+            60% { transform: translateX(-4px) scale(1.01); opacity: 1; }
+            100% { transform: translateX(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes notifyExit {
+            0% { transform: translateX(0) scale(1); opacity: 1; }
+            100% { transform: translateX(calc(100% + 20px)) scale(0.9); opacity: 0; }
+        }
+
+        .notify-item.error {
+            background: var(--color-error-bg);
+            border-color: var(--color-error-border);
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(244, 63, 94, 0.06), var(--glass-inner-shadow);
+        }
+        .notify-item.info {
+            background: var(--color-info-bg);
+            border-color: var(--color-info-border);
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(99, 102, 241, 0.06), var(--glass-inner-shadow);
+        }
+        .notify-item.success {
+            background: var(--color-success-bg);
+            border-color: var(--color-success-border);
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(34, 197, 94, 0.06), var(--glass-inner-shadow);
+        }
+        .notify-item.warning {
+            background: var(--color-warning-bg);
+            border-color: var(--color-warning-border);
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(234, 179, 8, 0.06), var(--glass-inner-shadow);
+        }
+
+        .notify-item.error::after { background: var(--color-error); box-shadow: 0 0 8px var(--color-error-glow); }
+        .notify-item.info::after { background: var(--color-info); box-shadow: 0 0 8px var(--color-info-glow); }
+        .notify-item.success::after { background: var(--color-success); box-shadow: 0 0 8px var(--color-success-glow); }
+        .notify-item.warning::after { background: var(--color-warning); box-shadow: 0 0 8px var(--color-warning-glow); }
+
+        .notify-icon {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notify-item.error .notify-icon { background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.06)); box-shadow: 0 0 14px rgba(244, 63, 94, 0.15); }
+        .notify-item.info .notify-icon { background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.06)); box-shadow: 0 0 14px rgba(99, 102, 241, 0.15); }
+        .notify-item.success .notify-icon { background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.06)); box-shadow: 0 0 14px rgba(34, 197, 94, 0.15); }
+        .notify-item.warning .notify-icon { background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(234, 179, 8, 0.06)); box-shadow: 0 0 14px rgba(234, 179, 8, 0.15); }
+
+        .notify-icon svg { width: 16px; height: 16px; }
+        .notify-item.error .notify-icon svg { color: var(--color-error); }
+        .notify-item.info .notify-icon svg { color: var(--color-info); }
+        .notify-item.success .notify-icon svg { color: var(--color-success); }
+        .notify-item.warning .notify-icon svg { color: var(--color-warning); }
+
+        .notify-content { flex: 1; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+        .notify-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.6; }
+        .notify-item.error .notify-title { color: var(--color-error-soft); }
+        .notify-item.info .notify-title { color: var(--color-info-soft); }
+        .notify-item.success .notify-title { color: var(--color-success-soft); }
+        .notify-item.warning .notify-title { color: var(--color-warning-soft); }
+
+        .notify-text { font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, 0.92); line-height: 1.5; letter-spacing: -0.01em; }
+
+        .notify-timer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2.5px;
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            animation: timerShrink linear forwards;
+            opacity: 0.8;
+        }
+
+        .notify-item.error .notify-timer { background: linear-gradient(90deg, var(--color-error), transparent); }
+        .notify-item.info .notify-timer { background: linear-gradient(90deg, var(--color-info), transparent); }
+        .notify-item.success .notify-timer { background: linear-gradient(90deg, var(--color-success), transparent); }
+        .notify-item.warning .notify-timer { background: linear-gradient(90deg, var(--color-warning), transparent); }
+
+        @keyframes timerShrink { 0% { width: 100%; } 100% { width: 0%; } }
+
+        /* ==========================================
+           PROGRESS BAR
+           ========================================== */
+
+        .progressbar-wrapper {
+            position: fixed;
+            bottom: 14%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            width: 360px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s var(--ease-out-expo), visibility 0.4s, transform 0.4s var(--ease-out-expo);
+            z-index: 9998;
+        }
+
+        .progressbar-wrapper.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .progressbar-content {
+            background: var(--glass-bg-elevated);
+            backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 18px 22px;
+            box-shadow: var(--shadow-xl), var(--glass-inner-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progressbar-content::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+        }
+
+        .progressbar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .progressbar-label { font-size: 11.5px; font-weight: 600; color: rgba(255, 255, 255, 0.85); letter-spacing: 0.04em; text-transform: uppercase; }
+        .progressbar-percent { font-size: 11.5px; font-weight: 700; color: var(--color-success); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; text-shadow: 0 0 12px var(--color-success-glow); }
+
+        .progressbar-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-full);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .progressbar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: var(--radius-full);
+            background: linear-gradient(90deg, #059669, #22c55e, #4ade80);
+            position: relative;
+            transition: width 0.06s linear;
+        }
+
+        .progressbar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+            animation: shimmer 1.8s ease-in-out infinite;
+            border-radius: var(--radius-full);
+        }
+
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+
+        .progressbar-glow {
+            position: absolute;
+            top: -6px; left: 0;
+            height: 17px;
+            width: 0%;
+            border-radius: var(--radius-full);
+            background: radial-gradient(ellipse at right, var(--color-success-glow), transparent 70%);
+            filter: blur(8px);
+            transition: width 0.06s linear;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .progressbar-dot {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: -3px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-success);
+            box-shadow: 0 0 10px var(--color-success), 0 0 20px var(--color-success-glow);
+            animation: pulseDot 1.5s ease-in-out infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .progressbar-wrapper.active .progressbar-dot { opacity: 1; }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: translateY(-50%) scale(1); opacity: 0.8; }
+            50% { transform: translateY(-50%) scale(1.4); opacity: 1; }
+        }
+
+        /* ==========================================
+           INFO PANEL
+           ========================================== */
+
+        .info-panel {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%) translateX(-120%);
+            width: 330px;
+            opacity: 0;
+            transition: transform 0.5s var(--ease-out-expo), opacity 0.4s var(--ease-out-expo);
+            z-index: 9997;
+        }
+
+        .info-panel.active { transform: translateY(-50%) translateX(0); opacity: 1; }
+
+        .info-panel-accent {
+            position: absolute;
+            left: 0; top: 14px; bottom: 14px;
+            width: 3px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(180deg, var(--color-success), var(--color-success-glow), transparent);
+            box-shadow: 0 0 14px var(--color-success-glow);
+            animation: accentPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes accentPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; box-shadow: 0 0 20px var(--color-success-glow), 0 0 40px rgba(34, 197, 94, 0.1); }
+        }
+
+        .info-panel-content {
+            margin-left: 18px;
+            background: var(--glass-bg-elevated);
+            backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 22px 24px;
+            box-shadow: var(--shadow-xl), var(--glass-inner-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-panel-content::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+        }
+
+        .info-panel-header { display: flex; align-items: center; gap: 12px; }
+
+        .info-panel-icon {
+            width: 30px; height: 30px; min-width: 30px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(34, 197, 94, 0.06));
+            display: flex; align-items: center; justify-content: center;
+            color: var(--color-success);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+        }
+
+        .info-panel-icon svg { width: 15px; height: 15px; }
+
+        .info-panel-title {
+            font-size: 13.5px; font-weight: 600;
+            color: var(--color-success);
+            letter-spacing: -0.01em;
+            text-shadow: 0 0 24px rgba(34, 197, 94, 0.25);
+        }
+
+        .info-panel-divider {
+            height: 1px; margin: 16px 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
+            position: relative;
+        }
+
+        .info-panel-divider::after {
+            content: '';
+            position: absolute;
+            left: 0; top: -0.5px;
+            width: 50px; height: 2px;
+            background: linear-gradient(90deg, var(--color-success), transparent);
+            box-shadow: 0 0 10px var(--color-success-glow);
+            border-radius: var(--radius-full);
+            animation: dividerGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes dividerGlow {
+            0%, 100% { width: 50px; opacity: 0.7; }
+            50% { width: 70px; opacity: 1; }
+        }
+
+        .info-panel-text {
+            font-size: 12.5px; font-weight: 400;
+            color: rgba(255, 255, 255, 0.65);
+            line-height: 1.7;
+            letter-spacing: 0.005em;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-ambient"></div>
+    <div class="bg-grid"></div>
+
+    <!-- Version Badge -->
+    <div class="version-badge">
+        <h1>⚡ EXTER-LIB</h1>
+        <span class="tag">v2.0</span>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notify-container" id="notifyContainer"></div>
+
+    <!-- Progress Bar -->
+    <div class="progressbar-wrapper" id="progressbarWrapper">
+        <div class="progressbar-content">
+            <div class="progressbar-header">
+                <span class="progressbar-label" id="progressLabel">Loading...</span>
+                <span class="progressbar-percent" id="progressPercent">0%</span>
+            </div>
+            <div class="progressbar-track">
+                <div class="progressbar-fill" id="progressFill">
+                    <div class="progressbar-dot"></div>
+                </div>
+                <div class="progressbar-glow" id="progressGlow"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel" id="infoPanel">
+        <div class="info-panel-accent"></div>
+        <div class="info-panel-content">
+            <div class="info-panel-header">
+                <div class="info-panel-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="info-panel-title" id="infoTitle">Gruppe6 Contract</span>
+            </div>
+            <div class="info-panel-divider"></div>
+            <p class="info-panel-text" id="infoText">Return the delivery vehicle back to HQ</p>
+        </div>
+    </div>
+
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+        <button class="demo-btn error" onclick="triggerNotify('error')">Error</button>
+        <button class="demo-btn info" onclick="triggerNotify('info')">Info</button>
+        <button class="demo-btn success" onclick="triggerNotify('success')">Success</button>
+        <button class="demo-btn warning" onclick="triggerNotify('warning')">Warning</button>
+        <button class="demo-btn progress" onclick="triggerProgress()">Progress</button>
+        <button class="demo-btn infopanel" onclick="toggleInfo()">Info Panel</button>
+    </div>
+
+    <script>
+        (() => {
+            'use strict';
+
+            const notifyContainer = document.getElementById('notifyContainer');
+            const activeNotifs = new Map();
+
+            const NOTIFY_ICONS = {
+                error: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3"/><path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+                info: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+                success: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3"/><path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+                warning: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 20H22L12 2Z" stroke="currentColor" stroke-width="1.5" opacity="0.3" stroke-linejoin="round"/><path d="M12 9V13M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+            };
+
+            const NOTIFY_TITLES = { error: 'Error', info: 'Information', success: 'Success', warning: 'Warning' };
+            const NOTIFY_MESSAGES = {
+                error: "You don't have enough items in your inventory!",
+                info: "Press E to interact with the terminal",
+                success: "Vehicle successfully stored in garage",
+                warning: "Low fuel warning - find a gas station nearby"
+            };
+
+            window.triggerNotify = function(type) {
+                const id = Math.random().toString(36).substr(2, 9);
+                const time = 5000;
+
+                const notifEl = document.createElement('div');
+                notifEl.className = `notify-item ${type}`;
+                notifEl.dataset.id = id;
+
+                const existingCount = notifyContainer.children.length;
+                if (existingCount > 0) {
+                    notifEl.style.animationDelay = `${existingCount * 60}ms`;
+                }
+
+                notifEl.innerHTML = `
+                    <div class="notify-icon">${NOTIFY_ICONS[type]}</div>
+                    <div class="notify-content">
+                        <span class="notify-title">${NOTIFY_TITLES[type]}</span>
+                        <span class="notify-text">${NOTIFY_MESSAGES[type]}</span>
+                    </div>
+                    <div class="notify-timer" style="animation-duration: ${time}ms;"></div>
+                `;
+
+                notifyContainer.appendChild(notifEl);
+
+                const timer = setTimeout(() => {
+                    notifEl.classList.add('removing');
+                    setTimeout(() => {
+                        if (notifEl.parentNode) notifEl.parentNode.removeChild(notifEl);
+                        activeNotifs.delete(id);
+                    }, 350);
+                }, time);
+
+                activeNotifs.set(id, { element: notifEl, timer });
+            };
+
+            // Progress Bar
+            const progressWrapper = document.getElementById('progressbarWrapper');
+            const progressFill = document.getElementById('progressFill');
+            const progressGlow = document.getElementById('progressGlow');
+            const progressLabel = document.getElementById('progressLabel');
+            const progressPercent = document.getElementById('progressPercent');
+            let progressActive = false;
+            let progressAnimation = null;
+
+            window.triggerProgress = function() {
+                if (progressActive) return;
+                progressActive = true;
+                const duration = 5000;
+
+                progressFill.style.width = '0%';
+                progressGlow.style.width = '0%';
+                progressLabel.textContent = 'SEARCHING REGISTER';
+                progressPercent.textContent = '0%';
+                progressWrapper.classList.add('active');
+
+                const startTime = performance.now();
+                let lastPercent = 0;
+
+                function animate(currentTime) {
+                    if (!progressActive) return;
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const percent = Math.round(progress * 100);
+
+                    if (percent !== lastPercent) {
+                        progressFill.style.width = `${percent}%`;
+                        progressGlow.style.width = `${percent}%`;
+                        progressPercent.textContent = `${percent}%`;
+                        lastPercent = percent;
+                    }
+
+                    if (progress < 1) {
+                        progressAnimation = requestAnimationFrame(animate);
+                    } else {
+                        progressActive = false;
+                        setTimeout(() => {
+                            progressWrapper.classList.remove('active');
+                            triggerNotify('success');
+                        }, 300);
+                    }
+                }
+
+                progressAnimation = requestAnimationFrame(animate);
+            };
+
+            // Info Panel
+            const infoPanel = document.getElementById('infoPanel');
+            let infoPanelVisible = false;
+
+            window.toggleInfo = function() {
+                infoPanelVisible = !infoPanelVisible;
+                infoPanel.classList.toggle('active', infoPanelVisible);
+            };
+
+            // Auto-demo
+            setTimeout(() => triggerNotify('info'), 600);
+            setTimeout(() => triggerNotify('success'), 1000);
+            setTimeout(() => triggerNotify('error'), 1400);
+            setTimeout(() => triggerNotify('warning'), 1800);
+            setTimeout(() => toggleInfo(), 2200);
+        })();
+    </script>
+</body>
+</html>
